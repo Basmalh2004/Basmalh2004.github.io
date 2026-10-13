@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basmala Nassar · Computer Engineering</title>
+<meta name="description" content="Basmala Nassar, Computer Engineering student at the Technion. Systems software, binary optimization, computer architecture and VLSI. Graduating October 2027.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='4' width='26' height='5' rx='1' fill='%230e6e6e'/%3E%3Crect x='3' y='11' width='26' height='5' rx='1' fill='%2314213d'/%3E%3Crect x='3' y='18' width='26' height='5' rx='1' fill='%2314213d'/%3E%3Crect x='3' y='25' width='26' height='5' rx='1' fill='%23b4652a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,500;125,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #14213d;
+  --muted: #4a5568;
+  --line: #c9d1da;
+  --teal: #0e6e6e;
+  --copper: #a85a22;
+  --slab-idle: #dde3ea;
+  --on-teal: #ffffff;
+  --display: "Archivo", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1522;
+    --surface: #172033;
+    --ink: #e6ebf2;
+    --muted: #a3afc2;
+    --line: #2a3650;
+    --teal: #45bab2;
+    --copper: #e0955a;
+    --slab-idle: #1d283d;
+    --on-teal: #0f1522;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 17px/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--teal); text-underline-offset: 3px; }
+a:focus-visible, .btn:focus-visible, .slab:focus-visible {
+  outline: 3px solid var(--copper);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 64px;
+}
+
+/* ---------- the abstraction stack (signature) ---------- */
+.stack {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+.stack-caption {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.slab {
+  display: block;
+  text-decoration: none;
+  color: var(--muted);
+  background: var(--slab-idle);
+  border-left: 4px solid transparent;
+  padding: 10px 12px;
+  border-radius: 2px;
+  transition: background .25s, color .25s, border-color .25s, transform .25s;
+}
+.slab b {
+  display: block;
+  font: 800 13px/1.2 var(--display);
+  font-stretch: 125%;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: inherit;
+}
+.slab span { font: 400 12px/1.35 var(--mono); }
+.slab:hover { color: var(--ink); }
+.slab.on {
+  background: var(--teal);
+  color: var(--on-teal);
+  border-left-color: var(--copper);
+  transform: translateX(6px);
+}
+.stack-foot {
+  font: 400 12px/1.4 var(--mono);
+  color: var(--muted);
+  margin: 10px 0 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ---------- content ---------- */
+main { min-width: 0; padding-bottom: 96px; }
+
+.hero { padding: 18vh 0 72px; }
+.hero h1 {
+  font: 800 clamp(44px, 7.4vw, 92px)/0.95 var(--display);
+  font-stretch: 125%;
+  letter-spacing: -.01em;
+  margin: 0 0 28px;
+}
+.hero h1 .last { color: var(--teal); }
+.thesis {
+  font-size: clamp(20px, 2.3vw, 26px);
+  line-height: 1.4;
+  max-width: 30ch;
+  margin: 0 0 32px;
+}
+.facts {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  font: 400 14px/1.5 var(--mono);
+  color: var(--muted);
+}
+.facts strong { color: var(--ink); font-weight: 500; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  color: var(--ink);
+  text-decoration: none;
+  font: 500 15px/1 var(--body);
+}
+.btn.primary { background: var(--ink); color: var(--bg); }
+.btn:hover { border-color: var(--teal); }
+.btn.primary:hover { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
+
+.layer {
+  padding: 56px 0 24px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 0;
+}
+.eyebrow {
+  font: 500 12px/1.4 var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin: 0 0 8px;
+}
+.layer > h2 {
+  font: 800 clamp(26px, 3.4vw, 36px)/1.1 var(--display);
+  font-stretch: 112%;
+  margin: 0 0 12px;
+}
+.layer > .lede { color: var(--muted); max-width: 60ch; margin: 0 0 32px; }
+
+.project {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 28px 30px;
+  margin: 0 0 20px;
+}
+.project h3 {
+  font: 500 22px/1.25 var(--display);
+  font-stretch: 112%;
+  margin: 0 0 4px;
+}
+.meta {
+  font: 400 13px/1.5 var(--mono);
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.project p { margin: 0 0 12px; max-width: 68ch; }
+.project ul { margin: 0 0 12px; padding-left: 20px; max-width: 68ch; }
+.project li { margin: 0 0 6px; }
+.result {
+  display: inline-block;
+  font: 500 14px/1.4 var(--mono);
+  color: var(--teal);
+  border-left: 3px solid var(--copper);
+  padding: 2px 0 2px 10px;
+  margin: 6px 0 0;
+}
+.pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 28px;
+  align-items: start;
+}
+.minis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+.minis .project { margin: 0; }
+
+/* systolic array figure */
+.array { width: 100%; height: auto; }
+.array .pe { fill: var(--slab-idle); stroke: var(--line); }
+.array .wave { fill: var(--teal); opacity: 0; animation: wave 3.2s infinite; animation-delay: calc(var(--d) * .32s); }
+.array text { font: 400 9px var(--mono); fill: var(--muted); }
+.array .arrow { stroke: var(--muted); stroke-width: 1.2; marker-end: url(#tip); }
+.array .tip { fill: var(--muted); }
+@keyframes wave { 0%, 100% { opacity: 0; } 8%, 22% { opacity: .9; } 34% { opacity: 0; } }
+figure { margin: 0; }
+figcaption { font: 400 12px/1.4 var(--mono); color: var(--muted); margin-top: 6px; }
+
+/* plain sections */
+.two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px 40px;
+}
+dl { margin: 0; }
+dt { font: 500 13px/1.4 var(--mono); color: var(--copper); text-transform: uppercase; letter-spacing: .06em; margin-top: 18px; }
+dd { margin: 4px 0 0; }
+.note { font-size: 15px; color: var(--muted); max-width: 64ch; }
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 28px 0 0;
+  font: 400 13px/1.5 var(--mono);
+  color: var(--muted);
+}
+
+/* ---------- narrow screens: the stack becomes a strip ---------- */
+@media (max-width: 860px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 16px; }
+  .stack {
+    height: auto;
+    flex-direction: row;
+    gap: 4px;
+    padding: 8px 0;
+    background: var(--bg);
+    z-index: 5;
+    border-bottom: 1px solid var(--line);
+  }
+  .stack-caption, .stack-foot, .slab span { display: none; }
+  .slab { flex: 1; padding: 8px 4px; text-align: center; border-left: 0; border-bottom: 3px solid transparent; }
+  .slab b { font-size: 10px; letter-spacing: 0; }
+  .slab.on { transform: none; border-bottom-color: var(--copper); }
+  .hero { padding: 48px 0 48px; }
+  .layer { scroll-margin-top: 56px; }
+  .project { padding: 22px 18px; }
+  .pair { grid-template-columns: minmax(0, 1fr); }
+  .pair figure { max-width: 220px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .slab { transition: none; }
+  .array .wave { animation: none; opacity: 0; }
+  .array .wave.still { opacity: .9; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="stack" aria-label="Sections, from software down to hardware">
+    <p class="stack-caption">Where the work sits</p>
+    <a class="slab" href="#software" data-for="software"><b>Software</b><span>C, C++, Linux</span></a>
+    <a class="slab" href="#binary" data-for="binary"><b>Binary</b><span>x86-64, Intel Pin</span></a>
+    <a class="slab" href="#microarch" data-for="microarch"><b>Micro&shy;arch</b><span>caches, predictors</span></a>
+    <a class="slab" href="#hardware" data-for="hardware"><b>Hardware</b><span>RTL, FPGA, VLSI</span></a>
+    <p class="stack-foot"><span>high level</span><span>&darr; silicon</span></p>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <h1>Basmala<br><span class="last">Nassar</span></h1>
+      <p class="thesis">I work on every layer between a C program and the chip it runs on, and I debug down to whichever layer the bug is in.</p>
+      <ul class="facts">
+        <li><strong>B.Sc. Computer Engineering</strong>, Technion</li>
+        <li>Graduating <strong>October 2027</strong></li>
+        <li>Internship from <strong>March 2027</strong>, 2&ndash;4 days a week</li>
+        <li>Haifa / Tel Aviv</li>
+      </ul>
+      <div class="actions">
+        <a class="btn primary" href="Basmala_Nassar_CV.pdf">Download CV (PDF)</a>
+        <a class="btn" href="mailto:basmalan@campus.technion.ac.il">basmalan@campus.technion.ac.il</a>
+      </div>
+    </header>
+
+    <section class="layer" id="software">
+      <p class="eyebrow">Layer &middot; software</p>
+      <h2>Systems code in C and C++</h2>
+      <p class="lede">Code that has to manage its own memory, link correctly and pass someone else&rsquo;s tests.</p>
+
+      <div class="minis">
+        <article class="project">
+          <h3>Linux shared library over an opaque ADT</h3>
+          <p class="meta">C &middot; Make &middot; Linux &middot; Introduction to Software Systems</p>
+          <p>Built <code>libgrades.so</code> from a hand-written Makefile (<code>-fPIC</code>, <code>-shared</code>), linked at load time against a second shared object. A linked-list ADT is driven only through an opaque iterator and clone/destroy callbacks.</p>
+          <span class="result">0 leaks under Valgrind</span>
+        </article>
+        <article class="project">
+          <h3>Network interface card simulator</h3>
+          <p class="meta">C++ &middot; OOP &middot; Make &middot; Introduction to Software Systems</p>
+          <p>Reads packets as text lines. A factory method builds the right L2, L3 or L4 object behind one abstract packet interface. Each layer checks its own checksum, MAC address or TTL, then hands the inner packet down. The IP mask decides whether a packet goes to the receive queue, the transmit queue or an open port&rsquo;s memory. Outgoing packets get the card&rsquo;s IP as their source, a lower TTL and a recomputed checksum.</p>
+          <span class="result">0 leaks under Valgrind</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="layer" id="binary">
+      <p class="eyebrow">Layer &middot; machine code</p>
+      <h2>Rewriting programs while they run</h2>
+      <p class="lede">Dynamic binary translation with Intel Pin in probe mode: the tool copies a running x86-64 program&rsquo;s hot code, rearranges it and sends execution to the new copy.</p>
+
+      <article class="project">
+        <h3>Profile-guided binary optimizer</h3>
+        <p class="meta">C++ &middot; x86-64 &middot; Intel Pin &middot; team of two &middot; Binary Translation &amp; Optimization, 2026</p>
+        <p>The tool profiles a running program, then builds a second, optimized copy of its hot code and switches execution over to it. The course goal was to beat the <em>native</em> run, with no Pin attached, by more than 5% on at least one of five benchmarks.</p>
+        <ul>
+          <li>Moved the optimized code onto huge pages, copied switch jump tables next to it, aligned hot loop heads and cut the cost of the profiling counters.</li>
+          <li>Added stack-slot load forwarding for unoptimized (<code>-O0</code>-style) code: reloads of locals from the stack are served from free registers instead of memory. It only turns on when a program looks like <code>-O0</code> output, so optimized binaries are left alone.</li>
+          <li>Tracked down a crash in static glibc&rsquo;s startup: the new code region collided with the heap&rsquo;s randomized start address. Fixed by placing it 256&nbsp;MB above the real program break.</li>
+          <li>Checked every benchmark output byte for byte against the native run, on each run.</li>
+        </ul>
+        <span class="result">bzip2: 15.1% faster than native, in 7 of 7 runs on the course VM</span>
+      </article>
+
+      <article class="project">
+        <h3>Branch profiler, and a crash that wasn&rsquo;t in my code</h3>
+        <p class="meta">C++ &middot; Intel Pin &middot; GDB &middot; Computer Architecture</p>
+        <p>A probe-mode Pin tool that collects and ranks hot branches and loops in real ELF binaries. On one SPEC compiler binary it crashed with a SIGSEGV. Using GDB I traced it to the tool rewriting the first PLT stub, which the dynamic linker relies on for lazy symbol binding. Skipping the <code>.plt</code> routine fixed it.</p>
+      </article>
+    </section>
+
+    <section class="layer" id="microarch">
+      <p class="eyebrow">Layer &middot; microarchitecture</p>
+      <h2>Simulating how a CPU spends its cycles</h2>
+      <p class="lede">Each simulator was graded against a hidden test suite. I wrote Python tooling that generated inputs, diffed against reference traces and summarised hundreds of cases per run.</p>
+
+      <div class="minis">
+        <article class="project">
+          <h3>Branch predictor</h3>
+          <p class="meta">C &middot; Computer Architecture</p>
+          <p>Configurable BTB with local or global history, two-bit FSM tables per branch or shared, and GShare/LShare XOR indexing.</p>
+          <span class="result">458 / 458 tests</span>
+        </article>
+        <article class="project">
+          <h3>Two-level cache</h3>
+          <p class="meta">C++ &middot; Computer Architecture</p>
+          <p>L1 and L2 with LRU replacement, write-back and write-allocate options, and average access time statistics.</p>
+          <span class="result">803 / 803 tests</span>
+        </article>
+        <article class="project">
+          <h3>Dataflow analyzer</h3>
+          <p class="meta">C &middot; Computer Architecture</p>
+          <p>Builds the instruction dependency graph of a program and computes critical-path depth, the limit an out-of-order core can reach.</p>
+          <span class="result">500 / 500 tests, Valgrind-clean</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="layer" id="hardware">
+      <p class="eyebrow">Layer &middot; hardware</p>
+      <h2>Designing the circuit itself</h2>
+      <p class="lede">RTL for FPGAs, and a year-long chip design project at the Technion VLSI Lab.</p>
+
+      <article class="project pair">
+        <div>
+          <h3>Systolic-array convolution accelerator</h3>
+          <p class="meta">VLSI project &middot; team of two &middot; Technion VLSI Lab &middot; 2026/27, in progress</p>
+          <p>A configurable accelerator IP for neural-network convolution layers. Input pixels and weights move through a grid of multiply-accumulate units in a diagonal wave, so each value fetched from memory is used many times.</p>
+          <ul>
+            <li>Split the core into units (caches, memory port, array, merge and quantize, pooling) and designed a state machine for each, plus the controller that runs loading and computing in parallel.</li>
+            <li>Wrote a cycle-by-cycle Python model of those state machines to measure array utilization before writing RTL, then used it to find and remove the stalls.</li>
+          </ul>
+          <span class="result">1&times;1 layer utilization: 40.7% &rarr; 95.8% after the fixes the model found</span>
+        </div>
+        <figure>
+          <svg class="array" viewBox="0 0 190 190" role="img" aria-labelledby="arr-t">
+            <title id="arr-t">A 4 by 4 grid of processing elements. A highlight moves diagonally from the top-left corner to the bottom-right, the way data flows through a systolic array.</title>
+            <defs><marker id="tip" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="6" markerHeight="6" orient="auto"><path class="tip" d="M0 0 L6 3 L0 6 z"/></marker></defs>
+            <text x="30" y="13">weights</text>
+            <line class="arrow" x1="80" y1="4" x2="80" y2="16"/>
+            <text x="12" y="176" transform="rotate(-90 12 176)">pixels</text>
+            <line class="arrow" x1="2" y1="99" x2="22" y2="99"/>
+            <g transform="translate(30 22)">
+              <rect class="pe" x="0" y="0" width="34" height="34" rx="2"/><rect class="pe" x="40" y="0" width="34" height="34" rx="2"/><rect class="pe" x="80" y="0" width="34" height="34" rx="2"/><rect class="pe" x="120" y="0" width="34" height="34" rx="2"/>
+              <rect class="pe" x="0" y="40" width="34" height="34" rx="2"/><rect class="pe" x="40" y="40" width="34" height="34" rx="2"/><rect class="pe" x="80" y="40" width="34" height="34" rx="2"/><rect class="pe" x="120" y="40" width="34" height="34" rx="2"/>
+              <rect class="pe" x="0" y="80" width="34" height="34" rx="2"/><rect class="pe" x="40" y="80" width="34" height="34" rx="2"/><rect class="pe" x="80" y="80" width="34" height="34" rx="2"/><rect class="pe" x="120" y="80" width="34" height="34" rx="2"/>
+              <rect class="pe" x="0" y="120" width="34" height="34" rx="2"/><rect class="pe" x="40" y="120" width="34" height="34" rx="2"/><rect class="pe" x="80" y="120" width="34" height="34" rx="2"/><rect class="pe" x="120" y="120" width="34" height="34" rx="2"/>
+              <rect class="wave still" style="--d:0" x="0" y="0" width="34" height="34" rx="2"/><rect class="wave" style="--d:1" x="40" y="0" width="34" height="34" rx="2"/><rect class="wave" style="--d:2" x="80" y="0" width="34" height="34" rx="2"/><rect class="wave" style="--d:3" x="120" y="0" width="34" height="34" rx="2"/>
+              <rect class="wave" style="--d:1" x="0" y="40" width="34" height="34" rx="2"/><rect class="wave still" style="--d:2" x="40" y="40" width="34" height="34" rx="2"/><rect class="wave" style="--d:3" x="80" y="40" width="34" height="34" rx="2"/><rect class="wave" style="--d:4" x="120" y="40" width="34" height="34" rx="2"/>
+              <rect class="wave" style="--d:2" x="0" y="80" width="34" height="34" rx="2"/><rect class="wave" style="--d:3" x="40" y="80" width="34" height="34" rx="2"/><rect class="wave still" style="--d:4" x="80" y="80" width="34" height="34" rx="2"/><rect class="wave" style="--d:5" x="120" y="80" width="34" height="34" rx="2"/>
+              <rect class="wave" style="--d:3" x="0" y="120" width="34" height="34" rx="2"/><rect class="wave" style="--d:4" x="40" y="120" width="34" height="34" rx="2"/><rect class="wave" style="--d:5" x="80" y="120" width="34" height="34" rx="2"/><rect class="wave still" style="--d:6" x="120" y="120" width="34" height="34" rx="2"/>
+            </g>
+          </svg>
+          <figcaption>Data enters at the top-left corner and sweeps diagonally across the array.</figcaption>
+        </figure>
+      </article>
+
+      <article class="project">
+        <h3>Pac-Man on an FPGA</h3>
+        <p class="meta">SystemVerilog &middot; ModelSim &middot; Quartus &middot; EE Lab 1A, grade 90</p>
+        <p>VGA controller, sprite rendering and game logic as state machines. Each module was verified in simulation first, then synthesized and debugged on the board.</p>
+      </article>
+    </section>
+
+    <section class="layer" id="more">
+      <p class="eyebrow">Background</p>
+      <h2>Education and skills</h2>
+      <div class="two">
+        <dl>
+          <dt>Degree</dt>
+          <dd>B.Sc. Computer and Software Engineering, Technion, Nov 2023 &ndash; Oct 2027 (expected). GPA 81.6.</dd>
+          <dt>Coursework</dt>
+          <dd>Data structures &amp; algorithms, operating systems, computer architecture, computer networks, software systems, correctness guarantees for software (SMT, abstract interpretation), binary translation &amp; optimization.</dd>
+          <dt>Teaching</dt>
+          <dd>Private physics tutor since 2023. Mentor in the Technion Equal Opportunities Program.</dd>
+        </dl>
+        <dl>
+          <dt>Languages</dt>
+          <dd>C, C++, Python (NumPy, Matplotlib), SystemVerilog, MATLAB</dd>
+          <dt>Tools</dt>
+          <dd>Git, GCC/Make, GDB, Valgrind, Intel Pin, ModelSim, Quartus, Vivado, Linux</dd>
+          <dt>Spoken</dt>
+          <dd>Arabic (native), Hebrew (fluent), English (fluent)</dd>
+        </dl>
+      </div>
+      <p class="note">Code for course projects is kept private under Technion academic-integrity rules. I&rsquo;m happy to walk through any of it in an interview.</p>
+    </section>
+
+    <footer>Basmala Nassar &middot; <a href="mailto:basmalan@campus.technion.ac.il">basmalan@campus.technion.ac.il</a> &middot; <a href="https://github.com/Basmalh2004">github.com/Basmalh2004</a></footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  var slabs = {};
+  document.querySelectorAll('.slab').forEach(function (s) { slabs[s.dataset.for] = s; });
+  if (!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      Object.keys(slabs).forEach(function (k) {
+        slabs[k].classList.toggle('on', k === en.target.id);
+        if (k === en.target.id) slabs[k].setAttribute('aria-current', 'true');
+        else slabs[k].removeAttribute('aria-current');
+      });
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  ['software', 'binary', 'microarch', 'hardware', 'more'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>
